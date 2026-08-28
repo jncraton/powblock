@@ -9,11 +9,11 @@ POST:
   - uuid = ID for this block
   - content = block data, max_len=64k
   - hours = number of hours to store the data. integer between 1 and 720
-  - pow = H(uuid + content + nonce) < 2^256 / (base_cost * max(bytes,256) * hours)
+  - pow = H(uuid + revision + content + nonce) < 2^256 / (base_cost * max(bytes,256) * hours)
   - nonce = 64bit integer found to pass pow
   - modification_key = random key used for future modifications sent in Authorization header
 
-Server stores `content` at `uuid` for `hours` if pow is correct. Server limits source IP addresses to one block creations per minute.
+Server stores `content` at `uuid` for `hours` if pow is correct. Revision is always `1` on creation. Server limits source IP addresses to one block creations per minute.
 
 ```
 POST /powblocks
@@ -32,6 +32,11 @@ Authorization: Bearer modification_key
 
 ```
 GET /powblocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
+
+{
+  "revision": 1,
+  "content": "This is the data stored in the block.",
+}
 ```
 
 ## Update
@@ -44,10 +49,13 @@ Authorization: Bearer modification_key
 {
   "content": "Updated data stored in the block.",
   "hours": 24,
+  "revision": 2,
   "pow": "000000ef57...",
   "nonce": 1844674407,
 }
 ```
+
+`revision` must be greater than stored `revision` or update will fail.
 
 ## Delete
 
@@ -55,7 +63,6 @@ Authorization: Bearer modification_key
 DELETE /powblocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
 Authorization: Bearer modification_key
 ```
-
 
 ## Vacuuming
 
