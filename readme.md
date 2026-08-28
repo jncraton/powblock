@@ -106,6 +106,6 @@ create table powblocks (
   src_ip text not null,
 
   secret_hash blob not null
-    check (length(secret_hash) = 32),
+    check (length(secret_hash) = 32)
 );
 ```
