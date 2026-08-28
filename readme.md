@@ -81,7 +81,7 @@ HTTP/1.1 200 OK
 
 ## Vacuuming
 
-- Block data is zeroed when it expires, but the UUID and secret are stored for use for 12*hours
+- Blocks are removed after they reach their expiry time. Note that UUID reuse is not mitigated to minimize data storage requirements.
 
 ## Data Model
 
