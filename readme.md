@@ -11,14 +11,12 @@ POST:
   - hours = number of hours to store the data. integer between 1 and 720
   - pow = H(uuid + revision + content + nonce) < 2^256 / (base_cost * max(bytes,256) * hours)
   - nonce = 64bit integer found to pass pow
-  - modification_key = random key used for future modifications sent in Authorization header
 
 Server stores `content` at `uuid` for `hours` if pow is correct. Revision is always `1` on creation. Server limits source IP addresses to one block creations per minute.
 
 ```
 POST /powblocks
 Content-Type: application/json
-Authorization: Bearer modification_key
 
 {
   "uuid": "01J8Q2V6X7Y8Z9A0B1C2D3E4F5",
@@ -27,12 +25,21 @@ Authorization: Bearer modification_key
   "pow": "0000008f4a...",
   "nonce": 1844674407,
 }
+
+HTTP/1.1 201 Created
+Content-Type: application/json
+{
+  "modification_key": "random_key",
+  "expires": 1787925546,
+}
 ```
 ## Read
 
 ```
 GET /powblocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
 
+
+HTTP/1.1 200 OK
 {
   "revision": 1,
   "content": "This is the data stored in the block.",
@@ -53,6 +60,8 @@ Authorization: Bearer modification_key
   "pow": "000000ef57...",
   "nonce": 1844674407,
 }
+
+HTTP/1.1 201 Created
 ```
 
 `revision` must be greater than stored `revision` or update will fail.
@@ -62,6 +71,8 @@ Authorization: Bearer modification_key
 ```
 DELETE /powblocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
 Authorization: Bearer modification_key
+
+HTTP/1.1 200 OK
 ```
 
 ## Vacuuming
