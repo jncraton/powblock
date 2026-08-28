@@ -103,6 +103,8 @@ create table powblocks (
   updated_at integer not null,
   expires_at integer not null,
 
+  src_ip text not null,
+
   secret_hash blob not null
     check (length(secret_hash) = 32),
 );
