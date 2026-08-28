@@ -15,6 +15,8 @@ POST:
 
 Server stores `content` at `uuid` for `hours` if pow is correct. Revision is always `1` on creation. Server limits source IP addresses to one block creations per minute.
 
+On creation, a hash of `secret` is stored with the block and use to authorize future operations.
+
 ```
 POST /powblocks
 Content-Type: application/json
@@ -79,4 +81,4 @@ HTTP/1.1 200 OK
 
 ## Vacuuming
 
-- Block data is zeroed when it expires, but the UUID and modification_key are stored for use for 12*hours
+- Block data is zeroed when it expires, but the UUID and secret are stored for use for 12*hours
