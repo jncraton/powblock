@@ -36,17 +36,30 @@ GET /blocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
 
 ## Update
 
+```
 PUT /blocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
 Content-Type: application/json
 
 {
-  "uuid": "01J8Q2V6X7Y8Z9A0B1C2D3E4F5",
   "content": "Updated data stored in the block.",
   "hours": 24,
   "pow": "000000ef57...",
   "nonce": 1844674407,
   "modification_key": "random-secret-key"
 }
+```
+
+## Delete
+
+```
+DELETE /blocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
+Content-Type: application/json
+
+{
+  "modification_key": "random-secret-key"
+}
+```
+
 
 ## Vacuuming
 
