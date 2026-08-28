@@ -82,3 +82,28 @@ HTTP/1.1 200 OK
 ## Vacuuming
 
 - Block data is zeroed when it expires, but the UUID and secret are stored for use for 12*hours
+
+## Data Model
+
+Data is stored in single table with the following scheme:
+
+```sql
+create table powblocks (
+  uuid text primary key
+    collate binary
+    check (length(uuid) = 26),
+
+  revision integer not null default 1
+    check (revision >= 1),
+
+  content blob not null
+    check (length(content) <= 65536),
+
+  created_at integer not null,
+  updated_at integer not null,
+  expires_at integer not null,
+
+  secret_hash blob not null
+    check (length(secret_hash) = 32),
+);
+```
