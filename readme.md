@@ -85,7 +85,7 @@ HTTP/1.1 200 OK
 
 ## Data Model
 
-Data is stored in single table with the following scheme:
+Data is stored in single sqlite table with the following scheme:
 
 ```sql
 create table powblocks (
