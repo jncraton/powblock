@@ -9,7 +9,7 @@ POST:
   - uuid = ID for this block
   - content = block data, max_len=64k
   - hours = number of hours to store the data. integer between 1 and 720
-  - pow = H(uuid + revision + content + nonce) < 2^256 / (base_cost * max(bytes,256) * hours)
+  - pow = H(uuid + revision + content + nonce) < 2^256 / (work_factor * max(bytes,256) * max(hours, 1))
   - nonce = 64bit integer found to pass pow
   - secret = cryptographically secure random number to use for future operations
 
