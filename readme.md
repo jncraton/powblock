@@ -31,13 +31,13 @@ Authorization: Bearer modification_key
 ## Read
 
 ```
-GET /blocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
+GET /powblocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
 ```
 
 ## Update
 
 ```
-PUT /blocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
+PUT /powblocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
 Content-Type: application/json
 Authorization: Bearer modification_key
 
@@ -52,7 +52,7 @@ Authorization: Bearer modification_key
 ## Delete
 
 ```
-DELETE /blocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
+DELETE /powblocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
 Authorization: Bearer modification_key
 ```
 
