@@ -1,5 +1,7 @@
 # powblock
 
+![](https://cdn.rebrickable.com/media/thumbs/parts/elements/6360242.jpg/250x250p.jpg)
+
 Ephemeral proof-of-work public storage
 
 ## Create
