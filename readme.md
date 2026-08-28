@@ -11,12 +11,15 @@ POST:
   - hours = number of hours to store the data. integer between 1 and 720
   - pow = H(uuid + revision + content + nonce) < 2^256 / (base_cost * max(bytes,256) * hours)
   - nonce = 64bit integer found to pass pow
+  - secret = cryptographically secure random number to use for future operations
 
 Server stores `content` at `uuid` for `hours` if pow is correct. Revision is always `1` on creation. Server limits source IP addresses to one block creations per minute.
 
 ```
 POST /powblocks
 Content-Type: application/json
+Authorization: Bearer secret
+
 
 {
   "uuid": "01J8Q2V6X7Y8Z9A0B1C2D3E4F5",
@@ -29,7 +32,6 @@ Content-Type: application/json
 HTTP/1.1 201 Created
 Content-Type: application/json
 {
-  "modification_key": "random_key",
   "expires": 1787925546,
 }
 ```
@@ -51,7 +53,7 @@ HTTP/1.1 200 OK
 ```
 PUT /powblocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
 Content-Type: application/json
-Authorization: Bearer modification_key
+Authorization: Bearer secret
 
 {
   "content": "Updated data stored in the block.",
@@ -70,7 +72,7 @@ HTTP/1.1 201 Created
 
 ```
 DELETE /powblocks/01J8Q2V6X7Y8Z9A0B1C2D3E4F5
-Authorization: Bearer modification_key
+Authorization: Bearer secret
 
 HTTP/1.1 200 OK
 ```
