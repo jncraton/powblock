@@ -57,7 +57,6 @@ class Database:
                 CREATE TABLE IF NOT EXISTS powblocks (
                     uuid TEXT PRIMARY KEY COLLATE BINARY CHECK (length(uuid) = 26),
                     content BLOB NOT NULL CHECK (length(content) <= 65536),
-                    created_at INTEGER NOT NULL,
                     updated_at INTEGER NOT NULL,
                     expires_at INTEGER NOT NULL,
                     src_ip TEXT NOT NULL,
@@ -69,7 +68,7 @@ class Database:
                 "CREATE INDEX IF NOT EXISTS idx_expires_at ON powblocks(expires_at);"
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_ip_created ON powblocks(src_ip, created_at);"
+                "CREATE INDEX IF NOT EXISTS idx_ip_updated ON powblocks(src_ip, updated_at);"
             )
         conn.close()
 
@@ -292,8 +291,8 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
                     return
 
                 recent_count = conn.execute(
-                    "SELECT COUNT(*) as c FROM powblocks WHERE src_ip = ? AND created_at > ?",
-                    (client_ip, now - 60),
+                    "SELECT COUNT(*) as c FROM powblocks WHERE src_ip = ? AND updated_at > ?",
+                    (client_ip, (now * 1000) - 60_000),
                 ).fetchone()["c"]
                 if recent_count > 0:
                     self.send_json(
@@ -307,13 +306,12 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
             with conn:
                 conn.execute(
                     """
-                    INSERT INTO powblocks (uuid, content, created_at, updated_at, expires_at, src_ip, secret_hash)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO powblocks (uuid, content, updated_at, expires_at, src_ip, secret_hash)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     """,
                     (
                         uuid_str,
                         content_bytes,
-                        now,
                         modified_val,
                         expires_at,
                         client_ip,

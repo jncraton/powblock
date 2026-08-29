@@ -64,7 +64,6 @@ create table powblocks (
   content blob not null
     check (length(content) <= 65536),
 
-  created_at integer not null,
   updated_at integer not null,
   expires_at integer not null,
 
