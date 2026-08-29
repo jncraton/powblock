@@ -230,14 +230,12 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
         content = payload.get("content")
         hours = payload.get("hours")
         modified = payload.get("modified")
-        pow_hex = payload.get("pow")
         nonce = payload.get("nonce")
 
         if (
             content is None
             or hours is None
             or modified is None
-            or pow_hex is None
             or nonce is None
         ):
             self.send_json(400, {"error": "Missing required fields"})
@@ -265,11 +263,6 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
         # PoW Check
         pow_payload = f"{uuid_str}{modified_str}{content}{nonce}".encode("utf-8")
         computed_hash_bytes = sha256(pow_payload).digest()
-        computed_hash_hex = computed_hash_bytes.hex()
-
-        if not computed_hash_hex.startswith(pow_hex.lower()):
-            self.send_json(400, {"error": "PoW hash mismatch"})
-            return
 
         computed_int = int.from_bytes(computed_hash_bytes, "big")
         bytes_count = len(content_bytes)

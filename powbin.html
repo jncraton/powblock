@@ -468,7 +468,6 @@
           if (digestBigInt < target) {
             return {
               nonce: currentNonce,
-              pow: bytesToHex(digestBytes),
               targetHex: target.toString(16)
             };
           }
@@ -542,7 +541,6 @@
             content: content,
             hours: hours,
             modified: modified,
-            pow: result.pow,
             nonce: result.nonce
           })
         });

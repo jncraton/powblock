@@ -13,8 +13,7 @@ Authorization: Bearer secret
   "content": "This is the data stored in the block.",
   "hours": 24,
   "modified": "01J8Q2V6X7",
-  "pow": "000000ef57...",
-  "nonce": 1844674407,
+  "nonce": 1844674407
 }
 
 HTTP/1.1 201 Created
