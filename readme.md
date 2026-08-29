@@ -50,7 +50,7 @@ HTTP/1.1 200 OK
 
 ## Proof of Work
 
-pow = H(uuid + modfied + content + nonce) < 2^256 / (work_factor * max(bytes,256) * max(hours, 1))
+pow = H(uuid + modified + content + nonce) < 2^256 / (work_factor * max(bytes,256) * max(hours, 1))
 
 ## Data Model
 
