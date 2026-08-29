@@ -56,7 +56,6 @@ class Database:
                 """
                 CREATE TABLE IF NOT EXISTS powblocks (
                     uuid TEXT PRIMARY KEY COLLATE BINARY CHECK (length(uuid) = 26),
-                    revision INTEGER NOT NULL DEFAULT 1 CHECK (revision >= 1),
                     content BLOB NOT NULL CHECK (length(content) <= 65536),
                     created_at INTEGER NOT NULL,
                     updated_at INTEGER NOT NULL,
@@ -260,7 +259,7 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
         conn = self.db.get_conn()
 
         row = conn.execute(
-            "SELECT revision, secret_hash, updated_at, expires_at FROM powblocks WHERE uuid = ?",
+            "SELECT secret_hash, updated_at, expires_at FROM powblocks WHERE uuid = ?",
             (uuid_str,),
         ).fetchone()
 
@@ -290,8 +289,8 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
             with conn:
                 conn.execute(
                     """
-                    INSERT INTO powblocks (uuid, revision, content, created_at, updated_at, expires_at, src_ip, secret_hash)
-                    VALUES (?, 1, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO powblocks (uuid, content, created_at, updated_at, expires_at, src_ip, secret_hash)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         uuid_str,
@@ -320,19 +319,17 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
                 return
 
             expires_at = now + (hours * 3600)
-            new_revision = row["revision"] + 1
 
             with conn:
                 conn.execute(
                     """
                     UPDATE powblocks
-                    SET revision = ?,
-                        content = ?,
+                    SET content = ?,
                         updated_at = ?,
                         expires_at = ?
                     WHERE uuid = ?
                     """,
-                    (new_revision, content_bytes, modified_val, expires_at, uuid_str),
+                    (content_bytes, modified_val, expires_at, uuid_str),
                 )
             self.send_json(200, {"expires": expires_at})
 

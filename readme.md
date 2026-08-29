@@ -24,7 +24,7 @@ Content-Type: application/json
 }
 ```
 
-Server stores `content` at `uuid` for `hours` if pow is satisfied. Revision is always `1` on creation. Server limits source IP addresses to one block creation per minute.
+Server stores `content` at `uuid` for `hours` if pow is satisfied. Server limits source IP addresses to one block creation per minute.
 
 To prevent reuse, uuid is a timestamp-checked [ULID](https://github.com/ulid/spec). ULIDs are user-selected rather that server-generated so that they can be included in the POW and avoid replays while allowing a single PUT to create a block.
 
@@ -61,9 +61,6 @@ create table powblocks (
   uuid text primary key
     collate binary
     check (length(uuid) = 26),
-
-  revision integer not null default 1
-    check (revision >= 1),
 
   content blob not null
     check (length(content) <= 65536),
