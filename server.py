@@ -131,6 +131,31 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
         return secret
 
     def do_GET(self):
+        # Serve static HTML files if they exist in the current directory
+        path = self.path.split("?", 1)[0]
+        if path == "/":
+            file_path = "index.html"
+        else:
+            file_path = path.lstrip("/")
+
+        # Prevent path traversal outside current directory and check if file exists
+        if file_path and not (".." in file_path or file_path.startswith("/") or file_path.startswith("\\")):
+            import os
+            if os.path.isfile(file_path):
+                try:
+                    with open(file_path, "rb") as f:
+                        content_bytes = f.read()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Content-Length", str(len(content_bytes)))
+                    self._send_cors_headers()
+                    self.send_header("Connection", "close")
+                    self.end_headers()
+                    self.wfile.write(content_bytes)
+                    return
+                except Exception:
+                    pass
+
         parts = self.path.strip("/").split("/")
         if len(parts) != 2 or parts[0] != "powblocks":
             self.send_json(404, {"error": "Not Found"})
