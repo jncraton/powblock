@@ -75,9 +75,7 @@ class Database:
         now = int(time.time())
         conn = self.get_conn()
         with conn:
-            cursor = conn.execute(
-                "DELETE FROM powblocks WHERE expires <= ?", (now,)
-            )
+            cursor = conn.execute("DELETE FROM powblocks WHERE expires <= ?", (now,))
             return cursor.rowcount
 
 
@@ -137,8 +135,11 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
             file_path = path.lstrip("/")
 
         # Prevent path traversal outside current directory and check if file exists
-        if file_path and not (".." in file_path or file_path.startswith("/") or file_path.startswith("\\")):
+        if file_path and not (
+            ".." in file_path or file_path.startswith("/") or file_path.startswith("\\")
+        ):
             import os
+
             if os.path.isfile(file_path):
                 try:
                     with open(file_path, "rb") as f:
@@ -230,12 +231,7 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
         modified = payload.get("modified")
         nonce = payload.get("nonce")
 
-        if (
-            content is None
-            or hours is None
-            or modified is None
-            or nonce is None
-        ):
+        if content is None or hours is None or modified is None or nonce is None:
             self.send_json(400, {"error": "Missing required fields"})
             return
 
@@ -357,7 +353,9 @@ def vacuum_worker(db: Database, interval_sec: int = 30):
 
 def run_server():
     parser = argparse.ArgumentParser(description="Run powblock storage server.")
-    parser.add_argument("--host", default="0.0.0.0", help="Host to bind (default: 0.0.0.0)")
+    parser.add_argument(
+        "--host", default="0.0.0.0", help="Host to bind (default: 0.0.0.0)"
+    )
     parser.add_argument("--port", type=int, default=8080, help="Port (default: 8080)")
     parser.add_argument("--db", default="powblocks.db", help="SQLite database path")
     parser.add_argument(
