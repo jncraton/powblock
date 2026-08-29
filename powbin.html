@@ -1,643 +1,691 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>powblock // ephemeral pastebin</title>
-  <style>
-    :root {
-      --bg: #0d1117;
-      --panel: #161b22;
-      --border: #30363d;
-      --text: #c9d1d9;
-      --text-muted: #8b949e;
-      --accent: #58a6ff;
-      --accent-hover: #1f6feb;
-      --success: #238636;
-      --danger: #da3633;
-      --warning: #d29922;
-      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>powblock // ephemeral pastebin</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --panel: #161b22;
+        --border: #30363d;
+        --text: #c9d1d9;
+        --text-muted: #8b949e;
+        --accent: #58a6ff;
+        --accent-hover: #1f6feb;
+        --success: #238636;
+        --danger: #da3633;
+        --warning: #d29922;
+        --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+      }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.5;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+      body {
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
 
-    header {
-      background-color: var(--panel);
-      border-bottom: 1px solid var(--border);
-      padding: 0.75rem 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+      header {
+        background-color: var(--panel);
+        border-bottom: 1px solid var(--border);
+        padding: 0.75rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-    .brand {
-      font-family: var(--font-mono);
-      font-weight: bold;
-      color: var(--text);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+      .brand {
+        font-family: var(--font-mono);
+        font-weight: bold;
+        color: var(--text);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
 
-    .brand span { color: var(--accent); }
+      .brand span {
+        color: var(--accent);
+      }
 
-    .nav-actions { display: flex; gap: 0.5rem; align-items: center; }
+      .nav-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
 
-    main {
-      flex: 1;
-      max-width: 1000px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+      main {
+        flex: 1;
+        max-width: 1000px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
 
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
 
-    .form-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: center;
-    }
+      .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+      }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      flex: 1;
-      min-width: 200px;
-    }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex: 1;
+        min-width: 200px;
+      }
 
-    label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+      label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
 
-    input, select, textarea {
-      background-color: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-family: inherit;
-    }
+      input,
+      select,
+      textarea {
+        background-color: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-family: inherit;
+      }
 
-    textarea {
-      font-family: var(--font-mono);
-      resize: vertical;
-      min-height: 300px;
-      line-height: 1.4;
-      tab-size: 2;
-    }
+      textarea {
+        font-family: var(--font-mono);
+        resize: vertical;
+        min-height: 300px;
+        line-height: 1.4;
+        tab-size: 2;
+      }
 
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent);
-    }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px var(--accent);
+      }
 
-    button {
-      background-color: var(--accent);
-      color: #ffffff;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      transition: background 0.15s;
-    }
+      button {
+        background-color: var(--accent);
+        color: #ffffff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: background 0.15s;
+      }
 
-    button:hover { background-color: var(--accent-hover); }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
+      button:hover {
+        background-color: var(--accent-hover);
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
 
-    button.btn-secondary {
-      background-color: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-    button.btn-secondary:hover {
-      background-color: var(--border);
-    }
+      button.btn-secondary {
+        background-color: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      button.btn-secondary:hover {
+        background-color: var(--border);
+      }
 
-    button.btn-success { background-color: var(--success); }
-    button.btn-success:hover { filter: brightness(1.1); }
+      button.btn-success {
+        background-color: var(--success);
+      }
+      button.btn-success:hover {
+        filter: brightness(1.1);
+      }
 
-    /* Viewer Styles */
-    .view-content {
-      background-color: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 1rem;
-      font-family: var(--font-mono);
-      white-space: pre-wrap;
-      word-break: break-word;
-      min-height: 250px;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
+      /* Viewer Styles */
+      .view-content {
+        background-color: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1rem;
+        font-family: var(--font-mono);
+        white-space: pre-wrap;
+        word-break: break-word;
+        min-height: 250px;
+        max-height: 70vh;
+        overflow-y: auto;
+      }
 
-    /* PoW Mining Progress Overlay */
-    .mining-box {
-      background: rgba(22, 27, 34, 0.95);
-      border: 1px solid var(--accent);
-      border-radius: 6px;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-    }
+      /* PoW Mining Progress Overlay */
+      .mining-box {
+        background: rgba(22, 27, 34, 0.95);
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+      }
 
-    .progress-bar-bg {
-      background: var(--bg);
-      height: 8px;
-      border-radius: 4px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
+      .progress-bar-bg {
+        background: var(--bg);
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
 
-    .progress-bar-fill {
-      background: var(--accent);
-      height: 100%;
-      width: 0%;
-      transition: width 0.1s linear;
-    }
+      .progress-bar-fill {
+        background: var(--accent);
+        height: 100%;
+        width: 0%;
+        transition: width 0.1s linear;
+      }
 
-    .badge {
-      display: inline-block;
-      padding: 0.15rem 0.4rem;
-      font-size: 0.75rem;
-      font-family: var(--font-mono);
-      border-radius: 4px;
-      background: var(--border);
-      color: var(--text);
-    }
+      .badge {
+        display: inline-block;
+        padding: 0.15rem 0.4rem;
+        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        border-radius: 4px;
+        background: var(--border);
+        color: var(--text);
+      }
 
-    .status-msg {
-      padding: 0.75rem 1rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      display: none;
-    }
-    .status-msg.error { background: #3c1618; border: 1px solid var(--danger); color: #f85149; display: block; }
-    .status-msg.success { background: #132e1d; border: 1px solid var(--success); color: #56d364; display: block; }
+      .status-msg {
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        display: none;
+      }
+      .status-msg.error {
+        background: #3c1618;
+        border: 1px solid var(--danger);
+        color: #f85149;
+        display: block;
+      }
+      .status-msg.success {
+        background: #132e1d;
+        border: 1px solid var(--success);
+        color: #56d364;
+        display: block;
+      }
 
-    .hidden { display: none !important; }
-  </style>
-</head>
-<body>
-
-  <header>
-    <a href="#" class="brand" id="brand-link">
-      <span>#</span> powblock pastebin
-    </a>
-    <div class="nav-actions">
-      <button class="btn-secondary" id="btn-config-toggle"># Server Settings</button>
-      <button class="btn-secondary hidden" id="btn-new">New Paste</button>
-    </div>
-  </header>
-
-  <main>
-    <!-- Server Settings Card -->
-    <div class="card hidden" id="card-config">
-      <div class="form-row">
-        <div class="form-group" style="flex: 2;">
-          <label>API Server URL</label>
-          <input type="text" id="cfg-server-url" value="http://localhost:8080" placeholder="http://localhost:8080">
-        </div>
-        <div class="form-group">
-          <label>Work Factor Constant</label>
-          <input type="number" id="cfg-work-factor" value="1000" min="1">
-        </div>
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="#" class="brand" id="brand-link"> <span>#</span> powblock pastebin </a>
+      <div class="nav-actions">
+        <button class="btn-secondary" id="btn-config-toggle"># Server Settings</button>
+        <button class="btn-secondary hidden" id="btn-new">New Paste</button>
       </div>
-    </div>
+    </header>
 
-    <!-- Feedback Banner -->
-    <div id="status-box" class="status-msg"></div>
-
-    <!-- Editor View -->
-    <div class="card" id="card-editor">
-      <div class="form-group">
-        <textarea id="paste-content" placeholder="Paste your text or code here..." spellcheck="false"></textarea>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Expiration (Hours)</label>
-          <select id="paste-hours">
-            <option value="1">1 Hour</option>
-            <option value="6">6 Hours</option>
-            <option value="24" selected>24 Hours</option>
-            <option value="72">3 Days</option>
-            <option value="168">7 Days</option>
-          </select>
-        </div>
-
-        <div class="form-group" style="flex: 2;">
-          <label>Secret Key (Authorization)</label>
-          <div style="display: flex; gap: 0.5rem;">
-            <input type="text" id="paste-secret" placeholder="Auto-generated secret" maxlength="32">
-            <button type="button" class="btn-secondary" id="btn-regen-secret" title="Generate New Secret"># </button>
+    <main>
+      <!-- Server Settings Card -->
+      <div class="card hidden" id="card-config">
+        <div class="form-row">
+          <div class="form-group" style="flex: 2">
+            <label>API Server URL</label>
+            <input type="text" id="cfg-server-url" value="http://localhost:8080" placeholder="http://localhost:8080" />
+          </div>
+          <div class="form-group">
+            <label>Work Factor Constant</label>
+            <input type="number" id="cfg-work-factor" value="1000" min="1" />
           </div>
         </div>
       </div>
 
-      <!-- Mining Progress Indicator -->
-      <div class="mining-box hidden" id="mining-status">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span id="mining-label">#  Mining Proof of Work...</span>
-          <span id="mining-stats" class="badge">0 H/s</span>
+      <!-- Feedback Banner -->
+      <div id="status-box" class="status-msg"></div>
+
+      <!-- Editor View -->
+      <div class="card" id="card-editor">
+        <div class="form-group">
+          <textarea id="paste-content" placeholder="Paste your text or code here..." spellcheck="false"></textarea>
         </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="mining-progress"></div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Expiration (Hours)</label>
+            <select id="paste-hours">
+              <option value="1">1 Hour</option>
+              <option value="6">6 Hours</option>
+              <option value="24" selected>24 Hours</option>
+              <option value="72">3 Days</option>
+              <option value="168">7 Days</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="flex: 2">
+            <label>Secret Key (Authorization)</label>
+            <div style="display: flex; gap: 0.5rem">
+              <input type="text" id="paste-secret" placeholder="Auto-generated secret" maxlength="32" />
+              <button type="button" class="btn-secondary" id="btn-regen-secret" title="Generate New Secret">#</button>
+            </div>
+          </div>
         </div>
-        <div style="color: var(--text-muted); font-size: 0.75rem;" id="mining-details">
-          Nonce: 0 | Target Difficulty: Computing...
+
+        <!-- Mining Progress Indicator -->
+        <div class="mining-box hidden" id="mining-status">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span id="mining-label"># Mining Proof of Work...</span>
+            <span id="mining-stats" class="badge">0 H/s</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="mining-progress"></div>
+          </div>
+          <div style="color: var(--text-muted); font-size: 0.75rem" id="mining-details">
+            Nonce: 0 | Target Difficulty: Computing...
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; align-items: center">
+          <span id="char-counter" style="color: var(--text-muted); font-size: 0.85rem">0 / 65536 bytes</span>
+          <button class="btn-success" id="btn-submit">Mine & Publish</button>
         </div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; align-items: center;">
-        <span id="char-counter" style="color: var(--text-muted); font-size: 0.85rem;">0 / 65536 bytes</span>
-        <button class="btn-success" id="btn-submit">Mine & Publish</button>
-      </div>
-    </div>
-
-    <!-- Read-Only Viewer -->
-    <div class="card hidden" id="card-viewer">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <span class="badge" id="view-uuid">UUID</span>
-          <span style="font-size: 0.8rem; color: var(--text-muted);" id="view-meta"></span>
+      <!-- Read-Only Viewer -->
+      <div class="card hidden" id="card-viewer">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+          ">
+          <div style="display: flex; gap: 0.5rem; align-items: center">
+            <span class="badge" id="view-uuid">UUID</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted)" id="view-meta"></span>
+          </div>
+          <div style="display: flex; gap: 0.5rem">
+            <button class="btn-secondary" id="btn-copy">Copy Content</button>
+            <button class="btn-secondary" id="btn-edit">Edit</button>
+          </div>
         </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="btn-secondary" id="btn-copy">Copy Content</button>
-          <button class="btn-secondary" id="btn-edit">Edit</button>
-        </div>
+        <div class="view-content" id="view-content-text"></div>
       </div>
-      <div class="view-content" id="view-content-text"></div>
-    </div>
-  </main>
+    </main>
 
-  <script>
-    // --- Crockford Base32 & ULID Implementation ---
-    const CROCKFORD_32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+    <script>
+      // --- Crockford Base32 & ULID Implementation ---
+      const CROCKFORD_32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
 
-    function encodeCrockfordTime(timestampMs, length = 10) {
-      let str = "";
-      let time = timestampMs;
-      for (let i = length - 1; i >= 0; i--) {
-        const mod = time % 32;
-        str = CROCKFORD_32[mod] + str;
-        time = Math.floor(time / 32);
+      function encodeCrockfordTime(timestampMs, length = 10) {
+        let str = ''
+        let time = timestampMs
+        for (let i = length - 1; i >= 0; i--) {
+          const mod = time % 32
+          str = CROCKFORD_32[mod] + str
+          time = Math.floor(time / 32)
+        }
+        return str
       }
-      return str;
-    }
 
-    function generateUlid() {
-      const timePart = encodeCrockfordTime(Date.now(), 10);
-      const randBytes = new Uint8Array(16);
-      crypto.getRandomValues(randBytes);
-      let randPart = "";
-      for (let i = 0; i < 16; i++) {
-        randPart += CROCKFORD_32[randBytes[i] % 32];
+      function generateUlid() {
+        const timePart = encodeCrockfordTime(Date.now(), 10)
+        const randBytes = new Uint8Array(16)
+        crypto.getRandomValues(randBytes)
+        let randPart = ''
+        for (let i = 0; i < 16; i++) {
+          randPart += CROCKFORD_32[randBytes[i] % 32]
+        }
+        return timePart + randPart
       }
-      return timePart + randPart;
-    }
 
-    function generateSecret(length = 24) {
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-      const bytes = new Uint8Array(length);
-      crypto.getRandomValues(bytes);
-      let secret = "";
-      for (let i = 0; i < length; i++) {
-        secret += chars[bytes[i] % chars.length];
+      function generateSecret(length = 24) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+        const bytes = new Uint8Array(length)
+        crypto.getRandomValues(bytes)
+        let secret = ''
+        for (let i = 0; i < length; i++) {
+          secret += chars[bytes[i] % chars.length]
+        }
+        return secret
       }
-      return secret;
-    }
 
-    function bytesToBigInt(u8) {
-      let result = 0n;
-      for (let i = 0; i < u8.length; i++) {
-        result = (result << 8n) | BigInt(u8[i]);
+      function bytesToBigInt(u8) {
+        let result = 0n
+        for (let i = 0; i < u8.length; i++) {
+          result = (result << 8n) | BigInt(u8[i])
+        }
+        return result
       }
-      return result;
-    }
 
-    function bytesToHex(u8) {
-      return Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // --- State Management ---
-    let currentUUID = null;
-    let isEditing = false;
-    let isMining = false;
-
-    // --- DOM Elements ---
-    const cardEditor = document.getElementById("card-editor");
-    const cardViewer = document.getElementById("card-viewer");
-    const cardConfig = document.getElementById("card-config");
-    const pasteContent = document.getElementById("paste-content");
-    const pasteHours = document.getElementById("paste-hours");
-    const pasteSecret = document.getElementById("paste-secret");
-    const btnSubmit = document.getElementById("btn-submit");
-    const btnNew = document.getElementById("btn-new");
-    const btnEdit = document.getElementById("btn-edit");
-    const btnCopy = document.getElementById("btn-copy");
-    const btnRegenSecret = document.getElementById("btn-regen-secret");
-    const btnConfigToggle = document.getElementById("btn-config-toggle");
-    const cfgServerUrl = document.getElementById("cfg-server-url");
-    const cfgWorkFactor = document.getElementById("cfg-work-factor");
-    const statusBox = document.getElementById("status-box");
-    const charCounter = document.getElementById("char-counter");
-    const miningStatus = document.getElementById("mining-status");
-    const miningProgress = document.getElementById("mining-progress");
-    const miningStats = document.getElementById("mining-stats");
-    const miningDetails = document.getElementById("mining-details");
-    const viewContentText = document.getElementById("view-content-text");
-    const viewUuid = document.getElementById("view-uuid");
-    const viewMeta = document.getElementById("view-meta");
-
-    // Pre-populate settings from localStorage
-    if (localStorage.getItem("powblock_server_url")) {
-      cfgServerUrl.value = localStorage.getItem("powblock_server_url");
-    }
-    pasteSecret.value = generateSecret();
-
-    function showStatus(msg, type = "error") {
-      statusBox.textContent = msg;
-      statusBox.className = `status-msg ${type}`;
-      if (type === "success") {
-        setTimeout(() => { statusBox.className = "status-msg"; }, 6000);
+      function bytesToHex(u8) {
+        return Array.from(u8)
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('')
       }
-    }
 
-    function clearStatus() {
-      statusBox.className = "status-msg";
-    }
+      // --- State Management ---
+      let currentUUID = null
+      let isEditing = false
+      let isMining = false
 
-    // --- Character & Size Counter ---
-    pasteContent.addEventListener("input", () => {
-      const len = new TextEncoder().encode(pasteContent.value).length;
-      charCounter.textContent = `${len} / 65536 bytes`;
-      if (len > 65536) {
-        charCounter.style.color = "var(--danger)";
-      } else {
-        charCounter.style.color = "var(--text-muted)";
+      // --- DOM Elements ---
+      const cardEditor = document.getElementById('card-editor')
+      const cardViewer = document.getElementById('card-viewer')
+      const cardConfig = document.getElementById('card-config')
+      const pasteContent = document.getElementById('paste-content')
+      const pasteHours = document.getElementById('paste-hours')
+      const pasteSecret = document.getElementById('paste-secret')
+      const btnSubmit = document.getElementById('btn-submit')
+      const btnNew = document.getElementById('btn-new')
+      const btnEdit = document.getElementById('btn-edit')
+      const btnCopy = document.getElementById('btn-copy')
+      const btnRegenSecret = document.getElementById('btn-regen-secret')
+      const btnConfigToggle = document.getElementById('btn-config-toggle')
+      const cfgServerUrl = document.getElementById('cfg-server-url')
+      const cfgWorkFactor = document.getElementById('cfg-work-factor')
+      const statusBox = document.getElementById('status-box')
+      const charCounter = document.getElementById('char-counter')
+      const miningStatus = document.getElementById('mining-status')
+      const miningProgress = document.getElementById('mining-progress')
+      const miningStats = document.getElementById('mining-stats')
+      const miningDetails = document.getElementById('mining-details')
+      const viewContentText = document.getElementById('view-content-text')
+      const viewUuid = document.getElementById('view-uuid')
+      const viewMeta = document.getElementById('view-meta')
+
+      // Pre-populate settings from localStorage
+      if (localStorage.getItem('powblock_server_url')) {
+        cfgServerUrl.value = localStorage.getItem('powblock_server_url')
       }
-    });
+      pasteSecret.value = generateSecret()
 
-    btnRegenSecret.addEventListener("click", () => {
-      pasteSecret.value = generateSecret();
-    });
+      function showStatus(msg, type = 'error') {
+        statusBox.textContent = msg
+        statusBox.className = `status-msg ${type}`
+        if (type === 'success') {
+          setTimeout(() => {
+            statusBox.className = 'status-msg'
+          }, 6000)
+        }
+      }
 
-    btnConfigToggle.addEventListener("click", () => {
-      cardConfig.classList.toggle("hidden");
-    });
+      function clearStatus() {
+        statusBox.className = 'status-msg'
+      }
 
-    cfgServerUrl.addEventListener("change", () => {
-      localStorage.setItem("powblock_server_url", cfgServerUrl.value.trim());
-    });
+      // --- Character & Size Counter ---
+      pasteContent.addEventListener('input', () => {
+        const len = new TextEncoder().encode(pasteContent.value).length
+        charCounter.textContent = `${len} / 65536 bytes`
+        if (len > 65536) {
+          charCounter.style.color = 'var(--danger)'
+        } else {
+          charCounter.style.color = 'var(--text-muted)'
+        }
+      })
 
-    // --- Proof of Work Miner ---
-    async function minePoW(uuid, modified, content, hours, workFactor, onProgress) {
-      const encoder = new TextEncoder();
-      const contentBytes = encoder.encode(content);
-      const bytesCount = BigInt(Math.max(contentBytes.length, 256));
-      const hoursCount = BigInt(Math.max(hours, 1));
-      const wf = BigInt(workFactor);
-      
-      const max256 = 2n ** 256n;
-      const target = max256 / (wf * bytesCount * hoursCount);
-      
-      const prefixStr = `${uuid}${modified}${content}`;
-      const prefixBytes = encoder.encode(prefixStr);
-      
-      let nonce = 0;
-      let startTime = performance.now();
-      let lastReport = startTime;
-      let hashesSinceReport = 0;
-      
-      // Batch size balance responsiveness and hash throughput
-      const batchSize = 1000;
+      btnRegenSecret.addEventListener('click', () => {
+        pasteSecret.value = generateSecret()
+      })
 
-      while (isMining) {
-        for (let i = 0; i < batchSize; i++) {
-          const currentNonce = nonce + i;
-          const nonceBytes = encoder.encode(currentNonce.toString());
-          
-          const combined = new Uint8Array(prefixBytes.length + nonceBytes.length);
-          combined.set(prefixBytes, 0);
-          combined.set(nonceBytes, prefixBytes.length);
+      btnConfigToggle.addEventListener('click', () => {
+        cardConfig.classList.toggle('hidden')
+      })
 
-          const digest = await crypto.subtle.digest("SHA-256", combined);
-          const digestBytes = new Uint8Array(digest);
-          const digestBigInt = bytesToBigInt(digestBytes);
+      cfgServerUrl.addEventListener('change', () => {
+        localStorage.setItem('powblock_server_url', cfgServerUrl.value.trim())
+      })
 
-          if (digestBigInt < target) {
-            return {
-              nonce: currentNonce,
-              targetHex: target.toString(16)
-            };
+      // --- Proof of Work Miner ---
+      async function minePoW(uuid, modified, content, hours, workFactor, onProgress) {
+        const encoder = new TextEncoder()
+        const contentBytes = encoder.encode(content)
+        const bytesCount = BigInt(Math.max(contentBytes.length, 256))
+        const hoursCount = BigInt(Math.max(hours, 1))
+        const wf = BigInt(workFactor)
+
+        const max256 = 2n ** 256n
+        const target = max256 / (wf * bytesCount * hoursCount)
+
+        const prefixStr = `${uuid}${modified}${content}`
+        const prefixBytes = encoder.encode(prefixStr)
+
+        let nonce = 0
+        let startTime = performance.now()
+        let lastReport = startTime
+        let hashesSinceReport = 0
+
+        // Batch size balance responsiveness and hash throughput
+        const batchSize = 1000
+
+        while (isMining) {
+          for (let i = 0; i < batchSize; i++) {
+            const currentNonce = nonce + i
+            const nonceBytes = encoder.encode(currentNonce.toString())
+
+            const combined = new Uint8Array(prefixBytes.length + nonceBytes.length)
+            combined.set(prefixBytes, 0)
+            combined.set(nonceBytes, prefixBytes.length)
+
+            const digest = await crypto.subtle.digest('SHA-256', combined)
+            const digestBytes = new Uint8Array(digest)
+            const digestBigInt = bytesToBigInt(digestBytes)
+
+            if (digestBigInt < target) {
+              return {
+                nonce: currentNonce,
+                targetHex: target.toString(16),
+              }
+            }
+          }
+
+          nonce += batchSize
+          hashesSinceReport += batchSize
+
+          const now = performance.now()
+          if (now - lastReport >= 250) {
+            const rate = Math.round((hashesSinceReport / (now - lastReport)) * 1000)
+            onProgress(nonce, rate, target)
+            lastReport = now
+            hashesSinceReport = 0
+            // Yield to main thread for smooth UI
+            await new Promise(r => setTimeout(r, 0))
           }
         }
+        return null
+      }
 
-        nonce += batchSize;
-        hashesSinceReport += batchSize;
+      // --- Publish / Update Action ---
+      btnSubmit.addEventListener('click', async () => {
+        clearStatus()
+        const content = pasteContent.value
+        const hours = parseInt(pasteHours.value, 10)
+        const secret = pasteSecret.value.trim()
+        const serverUrl = cfgServerUrl.value.trim().replace(/\/+$/, '')
+        const workFactor = parseInt(cfgWorkFactor.value, 10) || 1000
 
-        const now = performance.now();
-        if (now - lastReport >= 250) {
-          const rate = Math.round((hashesSinceReport / (now - lastReport)) * 1000);
-          onProgress(nonce, rate, target);
-          lastReport = now;
-          hashesSinceReport = 0;
-          // Yield to main thread for smooth UI
-          await new Promise(r => setTimeout(r, 0));
+        if (!content) {
+          showStatus('Please enter content to publish.')
+          return
         }
-      }
-      return null;
-    }
+        if (new TextEncoder().encode(content).length > 65536) {
+          showStatus('Content exceeds 65536 bytes limit.')
+          return
+        }
+        if (!secret || secret.length > 32) {
+          showStatus('Secret must be between 1 and 32 printable characters.')
+          return
+        }
 
-    // --- Publish / Update Action ---
-    btnSubmit.addEventListener("click", async () => {
-      clearStatus();
-      const content = pasteContent.value;
-      const hours = parseInt(pasteHours.value, 10);
-      const secret = pasteSecret.value.trim();
-      const serverUrl = cfgServerUrl.value.trim().replace(/\/+$/, "");
-      const workFactor = parseInt(cfgWorkFactor.value, 10) || 1000;
+        const uuid = isEditing && currentUUID ? currentUUID : generateUlid()
+        const modified = Math.floor(Date.now() / 1000)
 
-      if (!content) {
-        showStatus("Please enter content to publish.");
-        return;
-      }
-      if (new TextEncoder().encode(content).length > 65536) {
-        showStatus("Content exceeds 65536 bytes limit.");
-        return;
-      }
-      if (!secret || secret.length > 32) {
-        showStatus("Secret must be between 1 and 32 printable characters.");
-        return;
-      }
+        // Start Mining UI
+        isMining = true
+        btnSubmit.disabled = true
+        miningStatus.classList.remove('hidden')
+        miningProgress.style.width = '0%'
 
-      const uuid = (isEditing && currentUUID) ? currentUUID : generateUlid();
-      const modified = Math.floor(Date.now() / 1000);
-
-      // Start Mining UI
-      isMining = true;
-      btnSubmit.disabled = true;
-      miningStatus.classList.remove("hidden");
-      miningProgress.style.width = "0%";
-
-      try {
-        const result = await minePoW(uuid, modified, content, hours, workFactor, (nonce, rate, target) => {
-          miningStats.textContent = `${rate.toLocaleString()} H/s`;
-          miningDetails.textContent = `Nonce: ${nonce.toLocaleString()}`;
-          miningProgress.style.width = `${(nonce % 100)}%`;
-        });
-
-        if (!result) return; // Cancelled
-
-        miningDetails.textContent = `Found nonce ${result.nonce}! Submitting to server...`;
-
-        const resp = await fetch(`${serverUrl}/powblocks/${uuid}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${secret}`
-          },
-          body: JSON.stringify({
-            content: content,
-            hours: hours,
-            modified: modified,
-            nonce: result.nonce
+        try {
+          const result = await minePoW(uuid, modified, content, hours, workFactor, (nonce, rate, target) => {
+            miningStats.textContent = `${rate.toLocaleString()} H/s`
+            miningDetails.textContent = `Nonce: ${nonce.toLocaleString()}`
+            miningProgress.style.width = `${nonce % 100}%`
           })
-        });
 
-        const data = await resp.json();
-        if (!resp.ok) {
-          throw new Error(data.error || `HTTP ${resp.status}`);
+          if (!result) return // Cancelled
+
+          miningDetails.textContent = `Found nonce ${result.nonce}! Submitting to server...`
+
+          const resp = await fetch(`${serverUrl}/powblocks/${uuid}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${secret}`,
+            },
+            body: JSON.stringify({
+              content: content,
+              hours: hours,
+              modified: modified,
+              nonce: result.nonce,
+            }),
+          })
+
+          const data = await resp.json()
+          if (!resp.ok) {
+            throw new Error(data.error || `HTTP ${resp.status}`)
+          }
+
+          // Save secret locally for future edits
+          localStorage.setItem(`secret_${uuid}`, secret)
+
+          showStatus(
+            `Block successfully published! Expires: ${new Date(data.expires * 1000).toLocaleString()}`,
+            'success',
+          )
+          window.location.hash = uuid
+        } catch (err) {
+          showStatus(`Publish Error: ${err.message}`)
+        } finally {
+          isMining = false
+          btnSubmit.disabled = false
+          miningStatus.classList.add('hidden')
+        }
+      })
+
+      // --- Read Block ---
+      async function loadBlock(uuid) {
+        clearStatus()
+        const serverUrl = cfgServerUrl.value.trim().replace(/\/+$/, '')
+
+        try {
+          const resp = await fetch(`${serverUrl}/powblocks/${uuid}`)
+          if (!resp.ok) {
+            if (resp.status === 404) throw new Error('Block not found or expired.')
+            throw new Error(`HTTP Error ${resp.status}`)
+          }
+          const data = await resp.json()
+
+          currentUUID = uuid
+          viewUuid.textContent = uuid
+          viewContentText.textContent = data.content
+          viewMeta.textContent = `${new TextEncoder().encode(data.content).length} bytes`
+
+          // Switch to Viewer View
+          cardEditor.classList.add('hidden')
+          cardViewer.classList.remove('hidden')
+          btnNew.classList.remove('hidden')
+        } catch (err) {
+          showStatus(`Fetch Error: ${err.message}`)
+          showEditor()
+        }
+      }
+
+      function showEditor(isEditMode = false) {
+        isEditing = isEditMode
+        if (!isEditMode) {
+          currentUUID = null
+          pasteContent.value = ''
+          pasteSecret.value = generateSecret()
+          pasteContent.dispatchEvent(new Event('input'))
+          window.location.hash = ''
+        } else {
+          const savedSecret = localStorage.getItem(`secret_${currentUUID}`)
+          if (savedSecret) pasteSecret.value = savedSecret
         }
 
-        // Save secret locally for future edits
-        localStorage.setItem(`secret_${uuid}`, secret);
-
-        showStatus(`Block successfully published! Expires: ${new Date(data.expires * 1000).toLocaleString()}`, "success");
-        window.location.hash = uuid;
-      } catch (err) {
-        showStatus(`Publish Error: ${err.message}`);
-      } finally {
-        isMining = false;
-        btnSubmit.disabled = false;
-        miningStatus.classList.add("hidden");
+        cardViewer.classList.add('hidden')
+        cardEditor.classList.remove('hidden')
+        btnNew.classList.toggle('hidden', !isEditMode)
       }
-    });
 
-    // --- Read Block ---
-    async function loadBlock(uuid) {
-      clearStatus();
-      const serverUrl = cfgServerUrl.value.trim().replace(/\/+$/, "");
-      
-      try {
-        const resp = await fetch(`${serverUrl}/powblocks/${uuid}`);
-        if (!resp.ok) {
-          if (resp.status === 404) throw new Error("Block not found or expired.");
-          throw new Error(`HTTP Error ${resp.status}`);
+      btnEdit.addEventListener('click', () => {
+        pasteContent.value = viewContentText.textContent
+        pasteContent.dispatchEvent(new Event('input'))
+        showEditor(true)
+      })
+
+      btnNew.addEventListener('click', () => showEditor(false))
+
+      btnCopy.addEventListener('click', () => {
+        navigator.clipboard.writeText(viewContentText.textContent).then(() => {
+          const originalText = btnCopy.textContent
+          btnCopy.textContent = 'Copied!'
+          setTimeout(() => {
+            btnCopy.textContent = originalText
+          }, 1500)
+        })
+      })
+
+      // --- Router / Hash Observer ---
+      function handleRoute() {
+        const hash = window.location.hash.replace(/^#/, '').trim().toUpperCase()
+        if (hash.length === 26) {
+          loadBlock(hash)
+        } else {
+          showEditor(false)
         }
-        const data = await resp.json();
-        
-        currentUUID = uuid;
-        viewUuid.textContent = uuid;
-        viewContentText.textContent = data.content;
-        viewMeta.textContent = `${new TextEncoder().encode(data.content).length} bytes`;
-
-        // Switch to Viewer View
-        cardEditor.classList.add("hidden");
-        cardViewer.classList.remove("hidden");
-        btnNew.classList.remove("hidden");
-      } catch (err) {
-        showStatus(`Fetch Error: ${err.message}`);
-        showEditor();
-      }
-    }
-
-    function showEditor(isEditMode = false) {
-      isEditing = isEditMode;
-      if (!isEditMode) {
-        currentUUID = null;
-        pasteContent.value = "";
-        pasteSecret.value = generateSecret();
-        pasteContent.dispatchEvent(new Event("input"));
-        window.location.hash = "";
-      } else {
-        const savedSecret = localStorage.getItem(`secret_${currentUUID}`);
-        if (savedSecret) pasteSecret.value = savedSecret;
       }
 
-      cardViewer.classList.add("hidden");
-      cardEditor.classList.remove("hidden");
-      btnNew.classList.toggle("hidden", !isEditMode);
-    }
-
-    btnEdit.addEventListener("click", () => {
-      pasteContent.value = viewContentText.textContent;
-      pasteContent.dispatchEvent(new Event("input"));
-      showEditor(true);
-    });
-
-    btnNew.addEventListener("click", () => showEditor(false));
-
-    btnCopy.addEventListener("click", () => {
-      navigator.clipboard.writeText(viewContentText.textContent).then(() => {
-        const originalText = btnCopy.textContent;
-        btnCopy.textContent = "Copied!";
-        setTimeout(() => { btnCopy.textContent = originalText; }, 1500);
-      });
-    });
-
-    // --- Router / Hash Observer ---
-    function handleRoute() {
-      const hash = window.location.hash.replace(/^#/, "").trim().toUpperCase();
-      if (hash.length === 26) {
-        loadBlock(hash);
-      } else {
-        showEditor(false);
-      }
-    }
-
-    window.addEventListener("hashchange", handleRoute);
-    window.addEventListener("DOMContentLoaded", handleRoute);
-  </script>
-</body>
+      window.addEventListener('hashchange', handleRoute)
+      window.addEventListener('DOMContentLoaded', handleRoute)
+    </script>
+  </body>
 </html>
