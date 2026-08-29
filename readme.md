@@ -1,5 +1,7 @@
 # powblock
 
+[![Lint](https://github.com/jncraton/powblock/actions/workflows/lint.yml/badge.svg)](https://github.com/jncraton/powblock/actions/workflows/lint.yml)
+
 Ephemeral proof-of-work public storage
 
 ## Create or Update
