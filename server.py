@@ -18,7 +18,6 @@ from typing import Optional
 
 CROCKFORD_32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 ULID_REGEX = re.compile(r"^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$", re.IGNORECASE)
-MODIFIED_REGEX = re.compile(r"^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{10}$", re.IGNORECASE)
 
 
 def decode_crockford_timestamp(s: str) -> int:
@@ -57,18 +56,18 @@ class Database:
                 CREATE TABLE IF NOT EXISTS powblocks (
                     uuid TEXT PRIMARY KEY COLLATE BINARY CHECK (length(uuid) = 26),
                     content BLOB NOT NULL CHECK (length(content) <= 65536),
-                    updated_at INTEGER NOT NULL,
-                    expires_at INTEGER NOT NULL,
+                    modified INTEGER NOT NULL,
+                    expires INTEGER NOT NULL,
                     src_ip TEXT NOT NULL,
                     secret_hash BLOB NOT NULL CHECK (length(secret_hash) = 32)
                 );
                 """
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_expires_at ON powblocks(expires_at);"
+                "CREATE INDEX IF NOT EXISTS idx_expires ON powblocks(expires);"
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_ip_updated ON powblocks(src_ip, updated_at);"
+                "CREATE INDEX IF NOT EXISTS idx_ip_modified ON powblocks(src_ip, modified);"
             )
         conn.close()
 
@@ -77,7 +76,7 @@ class Database:
         conn = self.get_conn()
         with conn:
             cursor = conn.execute(
-                "DELETE FROM powblocks WHERE expires_at <= ?", (now,)
+                "DELETE FROM powblocks WHERE expires <= ?", (now,)
             )
             return cursor.rowcount
 
@@ -168,11 +167,11 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
         now = int(time.time())
         conn = self.db.get_conn()
         row = conn.execute(
-            "SELECT content, expires_at FROM powblocks WHERE uuid = ?", (uuid_str,)
+            "SELECT content, expires FROM powblocks WHERE uuid = ?", (uuid_str,)
         ).fetchone()
 
-        if not row or row["expires_at"] <= now:
-            if row and row["expires_at"] <= now:
+        if not row or row["expires"] <= now:
+            if row and row["expires"] <= now:
                 with conn:
                     conn.execute("DELETE FROM powblocks WHERE uuid = ?", (uuid_str,))
             self.send_json(404, {"error": "Block not found or expired"})
@@ -249,15 +248,12 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
             self.send_json(400, {"error": "Content exceeds 64KB limit"})
             return
 
-        modified_str = str(modified).upper()
-        try:
-            if MODIFIED_REGEX.match(modified_str):
-                modified_val = decode_crockford_timestamp(modified_str)
-            else:
-                modified_val = int(modified)
-        except ValueError:
-            self.send_json(400, {"error": "Invalid modified identifier"})
+        modified_val = modified
+        if not isinstance(modified, int) or isinstance(modified, bool) or modified < 0:
+            self.send_json(400, {"error": "Invalid modified timestamp"})
             return
+
+        modified_str = str(modified)
 
         # PoW Check
         pow_payload = f"{uuid_str}{modified_str}{content}{nonce}".encode("utf-8")
@@ -276,7 +272,7 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
         conn = self.db.get_conn()
 
         row = conn.execute(
-            "SELECT secret_hash, updated_at, expires_at FROM powblocks WHERE uuid = ?",
+            "SELECT secret_hash, modified, expires FROM powblocks WHERE uuid = ?",
             (uuid_str,),
         ).fetchone()
 
@@ -291,8 +287,8 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
                     return
 
                 recent_count = conn.execute(
-                    "SELECT COUNT(*) as c FROM powblocks WHERE src_ip = ? AND updated_at > ?",
-                    (client_ip, (now * 1000) - 60_000),
+                    "SELECT COUNT(*) as c FROM powblocks WHERE src_ip = ? AND modified > ?",
+                    (client_ip, now - 60),
                 ).fetchone()["c"]
                 if recent_count > 0:
                     self.send_json(
@@ -302,52 +298,52 @@ class PowBlockHandler(http.server.BaseHTTPRequestHandler):
 
                 self.ip_last_creation[client_ip] = now
 
-            expires_at = now + (hours * 3600)
+            expires = now + (hours * 3600)
             with conn:
                 conn.execute(
                     """
-                    INSERT INTO powblocks (uuid, content, updated_at, expires_at, src_ip, secret_hash)
+                    INSERT INTO powblocks (uuid, content, modified, expires, src_ip, secret_hash)
                     VALUES (?, ?, ?, ?, ?, ?)
                     """,
                     (
                         uuid_str,
                         content_bytes,
                         modified_val,
-                        expires_at,
+                        expires,
                         client_ip,
                         secret_hash,
                     ),
                 )
-            self.send_json(201, {"expires": expires_at})
+            self.send_json(201, {"expires": expires})
         else:
             # Update
             if not secrets.compare_digest(row["secret_hash"], secret_hash):
                 self.send_json(403, {"error": "Forbidden: invalid secret"})
                 return
 
-            if modified_val <= row["updated_at"]:
+            if modified_val <= row["modified"]:
                 self.send_json(
                     400,
                     {
-                        "error": f"Conflict: modified ({modified_val}) must be > stored modified ({row['updated_at']})"
+                        "error": f"Conflict: modified ({modified_val}) must be > stored modified ({row['modified']})"
                     },
                 )
                 return
 
-            expires_at = now + (hours * 3600)
+            expires = now + (hours * 3600)
 
             with conn:
                 conn.execute(
                     """
                     UPDATE powblocks
                     SET content = ?,
-                        updated_at = ?,
-                        expires_at = ?
+                        modified = ?,
+                        expires = ?
                     WHERE uuid = ?
                     """,
-                    (content_bytes, modified_val, expires_at, uuid_str),
+                    (content_bytes, modified_val, expires, uuid_str),
                 )
-            self.send_json(200, {"expires": expires_at})
+            self.send_json(200, {"expires": expires})
 
 
 def vacuum_worker(db: Database, interval_sec: int = 30):

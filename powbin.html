@@ -512,7 +512,7 @@
       }
 
       const uuid = (isEditing && currentUUID) ? currentUUID : generateUlid();
-      const modified = encodeCrockfordTime(Date.now(), 10);
+      const modified = Math.floor(Date.now() / 1000);
 
       // Start Mining UI
       isMining = true;
